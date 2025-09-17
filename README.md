@@ -19,4 +19,4 @@ We have been doing it for a while as WhatsApp polls and i felt like we could use
 - Firebase for auth + storage +FCM push managing
 
 ### Home Page
-<img src="./screenshots/home.png" alt="Home Page" width="400"/>
+<img src="./screenshots/eventdetails.png" alt="Home Page" width="400"/>
