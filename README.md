@@ -12,3 +12,8 @@ We have been doing it for a while as WhatsApp polls and i felt like we could use
 ##  Admin Tools 
 - view, add, and edit events
 - Send custom notifications to the team
+
+## Tech Stack
+- React + Vite for frontend development
+- Tailwind CSS for styling
+- Firebase for auth + storage +FCM push managing
