@@ -1,0 +1,28 @@
+{
+  "players": [
+    { "id": 1, "name": "Assaf", "email": "assaf@example.com" },
+    { "id": 2, "name": "Cassandra", "email": "cassandra@example.com" },
+    { "id": 3, "name": "Shira", "email": "shira@example.com" },
+    { "id": 4, "name": "Liam", "email": "liam@example.com" },
+    { "id": 5, "name": "Noa", "email": "noa@example.com" }
+  ],
+  "events": [
+    { "id": 101, "title": "Evening Practice", "date": "2025-04-01T19:00:00Z", "location": "Field A" },
+    { "id": 102, "title": "Conditioning", "date": "2025-04-03T19:00:00Z", "location": "Gym" },
+    { "id": 103, "title": "Scrimmage", "date": "2025-04-05T20:00:00Z", "location": "Field B" },
+    { "id": 104, "title": "Team Meeting", "date": "2025-04-07T18:30:00Z", "location": "Clubhouse" },
+    { "id": 105, "title": "Strategy Session", "date": "2025-04-10T19:30:00Z", "location": "Conference Room" },
+    { "id": 106, "title": "Friendly Match vs Hawks", "date": "2025-04-12T20:00:00Z", "location": "Away Field" },
+    { "id": 107, "title": "Strength Training", "date": "2025-04-15T19:00:00Z", "location": "Gym" },
+    { "id": 108, "title": "Skills Practice", "date": "2025-04-17T19:00:00Z", "location": "Field C" },
+    { "id": 109, "title": "Film Review", "date": "2025-04-20T18:00:00Z", "location": "Clubhouse" },
+    { "id": 110, "title": "League Match vs Bears", "date": "2025-04-25T20:00:00Z", "location": "Home Field" }
+  ],
+  "rsvps": [
+    { "eventId": 101, "playerId": 1, "status": "yes" },
+    { "eventId": 101, "playerId": 2, "status": "no" },
+    { "eventId": 101, "playerId": 3, "status": "maybe" },
+    { "eventId": 102, "playerId": 4, "status": "yes" },
+    { "eventId": 103, "playerId": 5, "status": "yes" }
+  ]
+}

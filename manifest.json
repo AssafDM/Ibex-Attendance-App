@@ -1,0 +1,19 @@
+{
+  "theme_color": "#F9FAFB",
+  "background_color": "#F9FAFB",
+  "icons": [
+    {
+      "src": "public/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "orientation": "portrait",
+  "display": "standalone",
+  "lang": "en-US",
+  "name": "Ibex attendance",
+  "short_name": "Ibex",
+  "start_url": "/",
+  "scope": "/",
+  "id": "ibex0.1"
+}
