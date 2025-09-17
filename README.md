@@ -1,7 +1,7 @@
 # Ibex Attendance Demo
 
 This is lightweight web app (PWA) that I built to help manage my rugby team’s events and attendance.  
-We have been doing it for a while as WhatsApp polls and i felt like we could use a more designated approach, that won't get lot in the grou chat.
+We have been doing it for a while as WhatsApp polls and i felt like we could use a more designated approach, that won't get lost in the group chat.
 
 ##  Features
 - View upcoming events
