@@ -17,3 +17,6 @@ We have been doing it for a while as WhatsApp polls and i felt like we could use
 - React + Vite for frontend development
 - Tailwind CSS for styling
 - Firebase for auth + storage +FCM push managing
+
+### Home Page
+![Home Page](./screenshots/eventdetails.png)
