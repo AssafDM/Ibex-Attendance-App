@@ -21,6 +21,6 @@ We have been doing it for a while as WhatsApp polls and i felt like we could use
 ### Players DashBoard
 <img src="./screenshots/eventdetails.png" alt="Home Page" width="300"/> <img src="./screenshots/playerslist.png" alt="Home Page" width="300"/> 
 ### Admins DashBoard
-<img src="./screenshots/editevent.png" alt="Home Page" width="300"/> <img src="./screenshots/sendnotification.png" alt="Home Page" width="300"/>
+<img src="./screenshots/newevent.jpg" alt="Home Page" width="300"/> <img src="./screenshots/sendnotification.png" alt="Home Page" width="300"/>
 ### notifications
 <img src="./screenshots/notifications.png" alt="Home Page" width="300"/>
