@@ -48,7 +48,7 @@ export default function AdminDash({ user }) {
     //PAGE----------//
     <div className="w-full max-w-md min-h-screen flex flex-col  p-4 bg-gray-50">
       <div className="flex items-center justify-between mb-3 mt-1">
-        <WelcomeMessage user={user} />
+        <h1 className="text-xl  text-ibex-purple drop-shadow-lg">Admin</h1>
         <Home onClick={handleBackwards} />
       </div>
       <div className="flex items-center justify-center mb-3 mt-1">

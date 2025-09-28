@@ -46,6 +46,7 @@ export default function AuthPage() {
     setBusy(true);
     try {
       await signupEmailPassword(email.trim(), password, displayName.trim());
+
       navigate("/", { replace: true });
     } catch (e) {
       setErr(parseFirebaseError(e));
@@ -154,7 +155,7 @@ export default function AuthPage() {
               label="Display name"
               value={displayName}
               onChange={setDisplayName}
-              placeholder="John Doe"
+              placeholder="Antoine Dupont"
               required
             />
             <Input

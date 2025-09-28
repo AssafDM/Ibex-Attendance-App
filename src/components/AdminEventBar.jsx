@@ -78,7 +78,7 @@ export default function AdminEventBar({
         setOpenEvent(open ? null : event.id);
       }}
     >
-      <div className="p-3 flex items-center justify-between">
+      <div className="py-3 pl-3 px-0 flex items-center justify-between">
         <div className="text-left">
           <p className="drop-shadow text-sm font-medium">{event.title}</p>
           <p className="drop-shadow text-sm font-medium">
@@ -86,33 +86,33 @@ export default function AdminEventBar({
           </p>
         </div>
 
-        <div className="items-right">
+        <div className="items-right space-x-1">
           {editable && ( // send notification button
-            <>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  closeAllFlags();
-                  setOpenEvent(event.id);
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                closeAllFlags();
+                setOpenEvent(event.id);
 
-                  setBell(true);
-                }}
-                className="shadow bg-ibex-gold text-white rounded-full mr-2 p-2 text-xs font-bold active:bg-red-300 transition"
-              >
-                {<Bell />}
-              </button>
-              <button
-                className="shadow bg-ibex-gold text-white rounded-full mr-2 p-2 text-xs font-bold active:bg-red-300 transition"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  closeAllFlags();
-                  setOpenEvent(event.id);
-                  setOpenForm(true);
-                }}
-              >
-                <SquarePenIcon />
-              </button>
-            </>
+                setBell(true);
+              }}
+              className="shadow bg-ibex-gold text-white rounded-full  p-2 text-xs font-bold active:bg-red-300 transition"
+            >
+              {<Bell />}
+            </button>
+          )}
+          {editable && (
+            <button
+              className="shadow bg-ibex-gold text-white rounded-full p-2 text-xs font-bold active:bg-red-300 transition"
+              onClick={(e) => {
+                e.stopPropagation();
+                closeAllFlags();
+                setOpenEvent(event.id);
+                setOpenForm(true);
+              }}
+            >
+              <SquarePenIcon />
+            </button>
           )}
           <button //delete event button
             onClick={(e) => {
@@ -121,7 +121,7 @@ export default function AdminEventBar({
               setOpenEvent(event.id);
               setDeleteBox(true);
             }}
-            className="shadow bg-red-500 text-white rounded-full ml-2 p-2 text-xs font-bold active:bg-red-300 transition"
+            className="shadow bg-red-500 text-white rounded-full p-2 text-xs font-bold active:bg-red-300 transition"
           >
             {<Trash2 />}
           </button>

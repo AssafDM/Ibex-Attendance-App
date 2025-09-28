@@ -5,6 +5,7 @@ import {
   sendPasswordResetEmail,
   updateProfile,
   getIdToken,
+  sendEmailVerification,
 } from "firebase/auth";
 import { auth } from "./firebase";
 
@@ -16,6 +17,7 @@ export async function loginEmailPassword(email, password) {
 export async function signupEmailPassword(email, password, displayName) {
   const { user } = await createUserWithEmailAndPassword(auth, email, password);
   if (displayName) await updateProfile(user, { displayName });
+  sendEmailVerification(user);
 
   return user;
 }
