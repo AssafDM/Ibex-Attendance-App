@@ -49,9 +49,9 @@ export default function AdminEventList({
         <AdminEventBar
           key={e.id}
           event={e}
-          edit={edit}
-          editEvent={editEvent}
-          setEditEvent={setEditEvent}
+          editable={edit}
+          openEvent={editEvent}
+          setOpenEvent={setEditEvent}
           onClick={() => setEditEvent(e.id)}
           onEventChange={onGlobalRefresh}
         />

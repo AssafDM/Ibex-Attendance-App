@@ -14,6 +14,7 @@ import {
   limit,
   getCountFromServer,
   serverTimestamp,
+  runTransaction,
 } from "firebase/firestore";
 import { db, auth } from "./firebase";
 
@@ -61,16 +62,22 @@ export const listEventsWithAttendance = async (
         ),
       ]);
 
-      const attendeeNames = namesSnap.docs.map(
-        (x) => x.data()?.name ?? "Unknown"
-      );
+      const attendeeNames = namesSnap.docs.map((d) => {
+        const data = d.data() || {};
+        return {
+          uid: d.id, // ← doc id = user uid
+          name: data.name ?? "Unknown",
+          team: data.team || null, // "gold" | "purple" | null
+          status: data.status || "no",
+        };
+      });
 
       return {
         id: d.id,
         ...data,
         startsAt: data.startsAt.toDate(),
         attendeeCount: countSnap.data().count,
-        attending: myAttendSnap.exists(),
+        attending: myAttendSnap.data()?.status == "yes",
         attendeeNames, // 👈 add it to your row
       };
     })
@@ -79,29 +86,57 @@ export const listEventsWithAttendance = async (
   return rows;
 };
 
-// RSVP YES (takes current user automatically)
-export const attend = async (eventId) => {
-  const uid = auth.currentUser?.uid;
-  const name = auth.currentUser.displayName;
-  if (!uid) throw new Error("Not logged in");
+// Count YES-per-team → pick smaller; random on tie
+async function pickBalancedTeam(eventId) {
+  const base = collection(db, "events", eventId, "attendees");
+  const [goldSnap, purpleSnap] = await Promise.all([
+    getCountFromServer(
+      query(base, where("status", "==", "yes"), where("team", "==", "gold"))
+    ),
+    getCountFromServer(
+      query(base, where("status", "==", "yes"), where("team", "==", "purple"))
+    ),
+  ]);
+  const gold = goldSnap.data().count || 0;
+  const purple = purpleSnap.data().count || 0;
+  if (gold < purple) return "gold";
+  if (purple < gold) return "purple";
+  return Math.random() < 0.5 ? "gold" : "purple";
+}
+
+export async function attend(eventId) {
+  const user = auth.currentUser;
+  if (!user) throw new Error("Not logged in");
+
+  const attRef = doc(db, "events", eventId, "attendees", user.uid);
+  const snap = await getDoc(attRef);
+  const prev = snap.exists() ? snap.data() : null;
+
+  // keep existing team; assign only if none
+  const team = prev && prev.team ? prev.team : await pickBalancedTeam(eventId);
+
   await setDoc(
-    doc(db, "events", eventId, "attendees", uid),
+    attRef,
     {
-      name: name,
+      name: user.displayName || "",
       status: "yes",
+      team, // sticky
       updatedAt: serverTimestamp(),
     },
-    { merge: true }
+    { merge: true } // never wipes team
   );
-};
+}
 
-// CANCEL RSVP
-export const unattend = async (eventId) => {
-  const uid = auth.currentUser?.uid;
-  if (!uid) throw new Error("Not logged in");
-  await deleteDoc(doc(db, "events", eventId, "attendees", uid));
-};
+export async function unattend(eventId) {
+  const user = auth.currentUser;
+  if (!user) throw new Error("Not logged in");
 
+  await setDoc(
+    doc(db, "events", eventId, "attendees", user.uid),
+    { status: "no", updatedAt: serverTimestamp() },
+    { merge: true } // preserves team for next time
+  );
+}
 // Count attendees
 export const countAttendees = async (eventId) => {
   const cnt = await getCountFromServer(
@@ -153,4 +188,19 @@ export const deleteEvent = async (eventId) => {
 
   // Finally delete the event document
   await deleteDoc(doc(db, "events", eventId));
+};
+export const switchTeam = async (eventId, uid) => {
+  const attRef = doc(db, "events", eventId, "attendees", uid);
+  const snap = await getDoc(attRef);
+  let team = "";
+
+  if (!snap.exists() || snap.data()?.team == null) {
+    return null; // no RSVP yet
+  }
+
+  const data = snap.data();
+  team = data.team;
+  const newTeam = team == "gold" ? "purple" : "gold";
+
+  await setDoc(attRef, { team: newTeam }, { merge: true });
 };

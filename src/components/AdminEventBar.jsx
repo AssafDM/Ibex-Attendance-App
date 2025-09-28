@@ -1,8 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import AddEventForm from "./AddEventForm";
-import { deleteEvent } from "../api.fb";
+import { deleteEvent, switchTeam } from "../api.fb";
 import AttList from "./AttList";
-import { Bell, Trash2 } from "lucide-react";
+import { Bell, SquarePenIcon, Trash2 } from "lucide-react";
 import { getFunctions, httpsCallable } from "firebase/functions";
 
 function useAutoHeight(open, deps = []) {
@@ -34,9 +34,9 @@ function useAutoHeight(open, deps = []) {
 
 export default function AdminEventBar({
   event,
-  edit = false,
-  editEvent,
-  setEditEvent,
+  editable = false,
+  openEvent,
+  setOpenEvent,
   onEventChange,
 }) {
   const date = event.startsAt.toLocaleDateString();
@@ -46,17 +46,25 @@ export default function AdminEventBar({
   });
   const day = event.startsAt.toLocaleDateString("en-US", { weekday: "long" });
   const rsvpCount = event.attendeeCount ?? 0;
+  const closeAllFlags = () => {
+    setDeleteBox(false);
+    setBell(false);
+    setOpenForm(false);
+  };
 
-  const open = editEvent === event.id;
+  const open = openEvent === event.id;
   const [deleteBox, setDeleteBox] = useState(false);
   const [bell, setBell] = useState(false);
   const [title, SetTitle] = useState("");
+  const [openForm, setOpenForm] = useState(false);
   const functions = getFunctions();
   const sendNotification = httpsCallable(functions, "sendNotification");
 
   // Re-sync deleteBox when row opens/closes
   useEffect(() => {
-    if (!open) setDeleteBox(false);
+    if (!open) {
+      closeAllFlags();
+    }
   }, [open]);
 
   // Single animated container: depends on whether we show delete box or form
@@ -66,10 +74,8 @@ export default function AdminEventBar({
     <div
       className="rounded-3xl shadow-md mb-3 bg-ibex-purple text-white p-1"
       onClick={() => {
-        // when clicking the bar, we enter edit mode
-        setEditEvent(open ? null : event.id);
-        setDeleteBox(false);
-        setBell(false);
+        // when clicking the bar, we enter editable mode
+        setOpenEvent(open ? null : event.id);
       }}
     >
       <div className="p-3 flex items-center justify-between">
@@ -81,25 +87,39 @@ export default function AdminEventBar({
         </div>
 
         <div className="items-right">
-          {edit && ( // send notification button
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setEditEvent(event.id);
-                setDeleteBox(false);
-                setBell(true);
-              }}
-              className="shadow bg-ibex-gold text-white rounded-full mr-2 p-2 text-xs font-bold active:bg-red-300 transition"
-            >
-              {<Bell />}
-            </button>
+          {editable && ( // send notification button
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  closeAllFlags();
+                  setOpenEvent(event.id);
+
+                  setBell(true);
+                }}
+                className="shadow bg-ibex-gold text-white rounded-full mr-2 p-2 text-xs font-bold active:bg-red-300 transition"
+              >
+                {<Bell />}
+              </button>
+              <button
+                className="shadow bg-ibex-gold text-white rounded-full mr-2 p-2 text-xs font-bold active:bg-red-300 transition"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  closeAllFlags();
+                  setOpenEvent(event.id);
+                  setOpenForm(true);
+                }}
+              >
+                <SquarePenIcon />
+              </button>
+            </>
           )}
           <button //delete event button
             onClick={(e) => {
               e.stopPropagation();
-              setEditEvent(event.id);
+              closeAllFlags();
+              setOpenEvent(event.id);
               setDeleteBox(true);
-              setBell(false);
             }}
             className="shadow bg-red-500 text-white rounded-full ml-2 p-2 text-xs font-bold active:bg-red-300 transition"
           >
@@ -108,7 +128,7 @@ export default function AdminEventBar({
         </div>
       </div>
 
-      {/* ONE animated container for both edit + delete states */}
+      {/* ONE animated container for both editable + delete states */}
       <div
         className="overflow-hidden transition-[height,opacity,margin] duration-400 ease-in-out"
         style={{
@@ -119,19 +139,29 @@ export default function AdminEventBar({
         onClick={(e) => e.stopPropagation()}
       >
         <div ref={innerRef}>
-          {edit &&
-            open &&
-            !bell &&
-            !deleteBox && ( //edit event form expantion
+          {editable && open && !(openForm || bell || deleteBox) && (
+            <div className="rounded-4xl bg-gray-100 pb-2">
+              <AttList
+                namesList={event.attendeeNames}
+                onEventClick={(uid) => {
+                  switchTeam(event.id, uid);
+                  onEventChange();
+                }}
+              />
+            </div>
+          )}
+          {editable &&
+            openForm &&
+            open && ( //editable event form expantion
               <div className="rounded-3xl bg-gray-100 text-gray-700 p-2">
                 <AddEventForm
                   event={event}
                   onCancel={(e) => {
                     e?.stopPropagation?.();
-                    setEditEvent(null);
+                    setOpenEvent(null);
                   }}
                   onSuccess={() => {
-                    setEditEvent(null);
+                    setOpenEvent(null);
                     onEventChange?.();
                   }}
                 />
@@ -149,7 +179,7 @@ export default function AdminEventBar({
                     type="button"
                     onClick={(e) => {
                       e?.stopPropagation?.();
-                      setEditEvent(null);
+                      setOpenEvent(null);
                       setDeleteBox(false);
                     }}
                     className="w-1/2 rounded-lg border px-4 py-2"
@@ -161,7 +191,7 @@ export default function AdminEventBar({
                     className="w-1/2 rounded-lg bg-red-500 text-white hover:bg-red-600 disabled:opacity-60"
                     onClick={() => {
                       deleteEvent(event.id);
-                      setEditEvent(null);
+                      setOpenEvent(null);
                       setDeleteBox(false);
                       onEventChange();
                     }}
@@ -194,7 +224,7 @@ export default function AdminEventBar({
                       title: title,
                       event: event,
                     });
-                    setEditEvent(null);
+                    setOpenEvent(null);
                     setBell(false);
                   }}
                   className="w-full rounded-lg border-white text-white px-4 py-2 bg-ibex-gold"
@@ -203,7 +233,7 @@ export default function AdminEventBar({
                 </button>
               </div>
             )}
-          {!edit && !deleteBox && (
+          {!editable && !deleteBox && (
             //past event features only players list
             <div className="rounded-4xl bg-gray-100 pb-2">
               <AttList namesList={event.attendeeNames} />
