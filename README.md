@@ -1,7 +1,7 @@
-# Ibex Attendance Demo
+# Ibex Attendance App
 
 This is lightweight web app (PWA) that I built to help manage my rugby team’s events and attendance.  
-We have been doing it for a while as WhatsApp polls and i felt like we could use a more designated approach, that won't get lot in the grou chat.
+We have been doing it for a while as WhatsApp polls and i felt like we could use a more designated approach, that won't get lost in the group chat.
 
 ##  Features
 - View upcoming events
@@ -17,3 +17,10 @@ We have been doing it for a while as WhatsApp polls and i felt like we could use
 - React + Vite for frontend development
 - Tailwind CSS for styling
 - Firebase for auth + storage +FCM push managing
+
+### Players DashBoard
+<img src="./screenshots/eventdetails.png" alt="Home Page" width="300"/> <img src="./screenshots/playerslist.png" alt="Home Page" width="300"/> 
+### Admins DashBoard
+<img src="./screenshots/newevent.jpg" alt="Home Page" width="300"/> <img src="./screenshots/sendnotification.png" alt="Home Page" width="300"/>
+### notifications
+<img src="./screenshots/notifications.png" alt="Home Page" width="300"/>
