@@ -2,18 +2,14 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import Unmarked from "./Unmarked";
 import WelcomeMessage from "./WelcomeMessage";
 import Upcoming from "./Upcoming";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth, initMessagingAndStoreToken } from "../firebase";
 import ErrorBoundary from "./ErrorBoundary";
 import { listEventsWithAttendance } from "../api.fb";
 import { useAdmin } from "../hooks/useAdmin";
-import { getMessaging, getToken, isSupported } from "firebase/messaging";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import { Settings, ShieldUser } from "lucide-react";
 import OverlayCard from "./OverlayCard";
 import SettingsMenu from "./settings";
+import PullToRefresh from "pulltorefreshjs";
 
 /*temporary*/
 const today = new Date();
@@ -52,6 +48,12 @@ export default function Dashboard({ events, setEvents, user }) {
       alive = false;
     };
   }, [refreshVersion, today, end]);
+
+  PullToRefresh.init({
+    onRefresh() {
+      onGlobalRefresh();
+    },
+  });
 
   return (
     <div className="w-full max-w-md min-h-screen flex flex-col  p-2 bg-gray-50">

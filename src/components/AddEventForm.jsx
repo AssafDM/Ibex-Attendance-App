@@ -17,7 +17,7 @@ export default function AddEventForm({ onSuccess, onCancel, event = null }) {
   const [title, setTitle] = useState(event ? event.title : "Evening Practice");
   const [when, setWhen] = useState(d); // value from <input type="datetime-local">
 
-  const [location, setLocation] = useState("Sportek");
+  const [location, setLocation] = useState(event ? event.location : "Sportek");
   const [notes, setNotes] = useState(event ? event.notes : "");
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");

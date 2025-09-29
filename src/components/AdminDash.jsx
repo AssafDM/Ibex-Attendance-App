@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import WelcomeMessage from "./WelcomeMessage";
 import OverlayCard from "./OverlayCard";
 import AddEventForm from "./AddEventForm";
 import AdminEventList from "./AdminEventList";
 import { listEventsWithAttendance } from "../api.fb";
 import { useNavigate } from "react-router-dom";
 import { Home } from "lucide-react";
+import PullToRefresh from "pulltorefreshjs";
 
 /**
  * admin controls dashboard
@@ -43,6 +43,12 @@ export default function AdminDash({ user }) {
   useEffect(() => {
     fetchData();
   }, [eventsVersion]);
+
+  PullToRefresh.init({
+    onRefresh() {
+      onEventChange();
+    },
+  });
 
   return (
     //PAGE----------//

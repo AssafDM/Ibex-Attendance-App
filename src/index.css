@@ -17,6 +17,7 @@
   margin: 0 auto;
   padding: 0;
   overflow-x: hidden;
+  overflow-y: auto;
   text-align: left;
 }
 

@@ -46,29 +46,23 @@ export default function AdminEventBar({
   });
   const day = event.startsAt.toLocaleDateString("en-US", { weekday: "long" });
   const rsvpCount = event.attendeeCount ?? 0;
-  const closeAllFlags = () => {
-    setDeleteBox(false);
-    setBell(false);
-    setOpenForm(false);
-  };
 
   const open = openEvent === event.id;
-  const [deleteBox, setDeleteBox] = useState(false);
-  const [bell, setBell] = useState(false);
+  const [windowMode, setWindowMode] = useState("players"); //should contain only "players"/"push"/"edit"/"delete"
   const [title, SetTitle] = useState("");
-  const [openForm, setOpenForm] = useState(false);
   const functions = getFunctions();
   const sendNotification = httpsCallable(functions, "sendNotification");
 
   // Re-sync deleteBox when row opens/closes
   useEffect(() => {
     if (!open) {
-      closeAllFlags();
+      const id = setTimeout(() => setWindowMode("players"), 300);
+      return () => clearTimeout(id);
     }
   }, [open]);
 
   // Single animated container: depends on whether we show delete box or form
-  const { innerRef, height } = useAutoHeight(open, [deleteBox, bell]);
+  const { innerRef, height } = useAutoHeight(open, [windowMode]);
 
   return (
     <div
@@ -91,10 +85,8 @@ export default function AdminEventBar({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                closeAllFlags();
+                setWindowMode("push");
                 setOpenEvent(event.id);
-
-                setBell(true);
               }}
               className="shadow bg-ibex-gold text-white rounded-full  p-2 text-xs font-bold active:bg-red-300 transition"
             >
@@ -106,9 +98,8 @@ export default function AdminEventBar({
               className="shadow bg-ibex-gold text-white rounded-full p-2 text-xs font-bold active:bg-red-300 transition"
               onClick={(e) => {
                 e.stopPropagation();
-                closeAllFlags();
+                setWindowMode("edit");
                 setOpenEvent(event.id);
-                setOpenForm(true);
               }}
             >
               <SquarePenIcon />
@@ -117,9 +108,8 @@ export default function AdminEventBar({
           <button //delete event button
             onClick={(e) => {
               e.stopPropagation();
-              closeAllFlags();
+              setWindowMode("delete");
               setOpenEvent(event.id);
-              setDeleteBox(true);
             }}
             className="shadow bg-red-500 text-white rounded-full p-2 text-xs font-bold active:bg-red-300 transition"
           >
@@ -139,106 +129,107 @@ export default function AdminEventBar({
         onClick={(e) => e.stopPropagation()}
       >
         <div ref={innerRef}>
-          {editable && open && !(openForm || bell || deleteBox) && (
-            <div className="rounded-4xl bg-gray-100 pb-2">
-              <AttList
-                namesList={event.attendeeNames}
-                onEventClick={(uid) => {
-                  switchTeam(event.id, uid);
-                  onEventChange();
-                }}
-              />
-            </div>
-          )}
-          {editable &&
-            openForm &&
-            open && ( //editable event form expantion
-              <div className="rounded-3xl bg-gray-100 text-gray-700 p-2">
-                <AddEventForm
-                  event={event}
-                  onCancel={(e) => {
-                    e?.stopPropagation?.();
-                    setOpenEvent(null);
-                  }}
-                  onSuccess={() => {
-                    setOpenEvent(null);
-                    onEventChange?.();
-                  }}
-                />
-              </div>
-            )}
+          {(() => {
+            switch (windowMode) {
+              case "players":
+                return (
+                  <div className="rounded-4xl bg-gray-100 pb-2">
+                    <AttList
+                      namesList={event.attendeeNames}
+                      onEventClick={
+                        editable
+                          ? (uid) => {
+                              switchTeam(event.id, uid);
+                              onEventChange();
+                            }
+                          : null
+                      }
+                    />
+                  </div>
+                );
+              case "edit":
+                return (
+                  <div className="rounded-3xl bg-gray-100 text-gray-700 p-2">
+                    <AddEventForm
+                      event={event}
+                      onCancel={(e) => {
+                        e?.stopPropagation?.();
+                        setOpenEvent(null);
+                      }}
+                      onSuccess={() => {
+                        setOpenEvent(null);
+                        onEventChange?.();
+                      }}
+                    />
+                  </div>
+                );
+              case "push":
+                return (
+                  <div className="rounded-3xl bg-gray-100 text-gray-700 p-3">
+                    <p className="mb-3">Send reminder to everyone?</p>
+                    <textarea
+                      id="title"
+                      value={title}
+                      onChange={(e) => SetTitle(e.target.value)}
+                      className="now-resize w-full rounded-lg border px-3 py-2"
+                      rows={1}
+                      placeholder="Title"
+                      style={{ resize: "none", overflow: "auto" }}
+                      maxLength={35}
+                    />
 
-          {open &&
-            deleteBox && ( //delete box expantion
-              <div className="rounded-3xl bg-gray-100 text-gray-700 p-3">
-                <p className="mb-3">
-                  Are you sure you want to delete this event?
-                </p>
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e?.stopPropagation?.();
-                      setOpenEvent(null);
-                      setDeleteBox(false);
-                    }}
-                    className="w-1/2 rounded-lg border px-4 py-2"
-                  >
-                    NO
-                  </button>
-                  <button
-                    type="button"
-                    className="w-1/2 rounded-lg bg-red-500 text-white hover:bg-red-600 disabled:opacity-60"
-                    onClick={() => {
-                      deleteEvent(event.id);
-                      setOpenEvent(null);
-                      setDeleteBox(false);
-                      onEventChange();
-                    }}
-                  >
-                    DELETE
-                  </button>
-                </div>
-              </div>
-            )}
-          {open &&
-            bell && ( //send notification expantion
-              <div className="rounded-3xl bg-gray-100 text-gray-700 p-3">
-                <p className="mb-3">Send reminder to everyone?</p>
-                <textarea
-                  id="title"
-                  value={title}
-                  onChange={(e) => SetTitle(e.target.value)}
-                  className="now-resize w-full rounded-lg border px-3 py-2"
-                  rows={1}
-                  placeholder="Title"
-                  style={{ resize: "none", overflow: "auto" }}
-                  maxLength={35}
-                />
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e?.stopPropagation?.();
-                    sendNotification({
-                      title: title,
-                      event: event,
-                    });
-                    setOpenEvent(null);
-                    setBell(false);
-                  }}
-                  className="w-full rounded-lg border-white text-white px-4 py-2 bg-ibex-gold"
-                >
-                  SEND
-                </button>
-              </div>
-            )}
-          {!editable && !deleteBox && (
-            //past event features only players list
-            <div className="rounded-4xl bg-gray-100 pb-2">
-              <AttList namesList={event.attendeeNames} />
-            </div>
-          )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e?.stopPropagation?.();
+                        sendNotification({
+                          title: title,
+                          event: event,
+                        });
+                        setOpenEvent(null);
+                        setBell(false);
+                      }}
+                      className="w-full rounded-lg border-white text-white px-4 py-2 bg-ibex-gold"
+                    >
+                      SEND
+                    </button>
+                  </div>
+                );
+              case "delete":
+                return (
+                  <div className="rounded-3xl bg-gray-100 text-gray-700 p-3">
+                    <p className="mb-3">
+                      Are you sure you want to delete this event?
+                    </p>
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e?.stopPropagation?.();
+                          setOpenEvent(null);
+                        }}
+                        className="w-1/2 rounded-lg border px-4 py-2"
+                      >
+                        NO
+                      </button>
+                      <button
+                        type="button"
+                        className="w-1/2 rounded-lg bg-red-500 text-white hover:bg-red-600 disabled:opacity-60"
+                        onClick={() => {
+                          deleteEvent(event.id);
+                          setOpenEvent(null);
+                          onEventChange();
+                        }}
+                      >
+                        DELETE
+                      </button>
+                    </div>
+                  </div>
+                );
+              default:
+                return <p>BACKWARDS?!</p>;
+            }
+          })()}
         </div>
       </div>
     </div>
