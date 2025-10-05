@@ -7,6 +7,7 @@ import AuthPage from "./AuthPage";
 import AdminDash from "./components/adminDash";
 import AdminGate from "./components/AdminGate";
 import Dashboard from "./components/Dashboard";
+import { updateUser } from "./api.fb";
 
 export default function Root() {
   const [user, setUser] = useState(undefined);
@@ -16,8 +17,22 @@ export default function Root() {
   //demand user sign in
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => setUser(u || null));
+
     return unsub; // cleanup
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    // wrap await in an async IIFE
+    (async () => {
+      try {
+        await updateUser();
+      } catch (e) {
+        console.error("Failed to sync user:", e);
+      }
+    })();
+  }, [user]);
 
   if (user === undefined) {
     return (

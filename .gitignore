@@ -40,6 +40,8 @@ functions/
 scripts/
 .firebase/
 firebase-debug.log
+public/firebase-messaging-sw.js
+public/SW.js
 
 # OS / editor junk
 .DS_Store

@@ -15,6 +15,7 @@ import {
   getCountFromServer,
   serverTimestamp,
   runTransaction,
+  endAt,
 } from "firebase/firestore";
 import { db, auth } from "./firebase";
 
@@ -51,7 +52,7 @@ export const listEventsWithAttendance = async (
       const attendeesRef = collection(db, "events", d.id, "attendees");
 
       const [countSnap, myAttendSnap, namesSnap] = await Promise.all([
-        getCountFromServer(attendeesRef),
+        getCountFromServer(query(attendeesRef, where("status", "==", "yes"))),
         getDoc(doc(attendeesRef, uid)),
         getDocs(
           query(
@@ -76,6 +77,7 @@ export const listEventsWithAttendance = async (
         id: d.id,
         ...data,
         startsAt: data.startsAt.toDate(),
+        endsAt: data.endsAt?.toDate(),
         attendeeCount: countSnap.data().count,
         attending: myAttendSnap.data()?.status == "yes",
         attendeeNames, // 👈 add it to your row
@@ -149,6 +151,7 @@ export const countAttendees = async (eventId) => {
 export const createEvent = async ({
   title,
   startsAt = Date,
+  endsAt = Date,
   location = "",
   notes = "",
 }) => {
@@ -157,6 +160,7 @@ export const createEvent = async ({
   const ref = await addDoc(collection(db, "events"), {
     title,
     startsAt: stamp,
+    endsAt: Timestamp.fromDate(endsAt),
     location,
     notes,
     updatedAt: serverTimestamp(),
@@ -204,3 +208,21 @@ export const switchTeam = async (eventId, uid) => {
 
   await setDoc(attRef, { team: newTeam }, { merge: true });
 };
+
+export async function updateUser() {
+  const user = auth.currentUser;
+  if (!user) throw new Error("No user logged in");
+
+  const userDoc = doc(db, "users", user.uid);
+
+  await setDoc(
+    userDoc,
+    {
+      uid: user.uid,
+      displayName: user.displayName ?? null,
+      email: user.email ?? null,
+      lastLogin: serverTimestamp(),
+    },
+    { merge: true }
+  );
+}
