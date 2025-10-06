@@ -46,3 +46,4 @@ public/SW.js
 # OS / editor junk
 .DS_Store
 .vscode
+.vercel

@@ -1,228 +1,153 @@
-// src/api.fb.js
-import {
-  Timestamp,
-  collection,
-  doc,
-  setDoc,
-  deleteDoc,
-  getDocs,
-  getDoc,
-  query,
-  where,
-  addDoc,
-  orderBy,
-  limit,
-  getCountFromServer,
-  serverTimestamp,
-  runTransaction,
-  endAt,
-} from "firebase/firestore";
-import { db, auth } from "./firebase";
+// src/api.mock.js
+// Mock replacement for api.fb.js – uses Vercel /api endpoints & mock/db.json
+// Works inside the demo branch (no Firebase imports needed)
 
-const MIN_DATE = new Date(Date.UTC(1, 0, 1, 0, 0, 0));
-const MAX_DATE = new Date(Date.UTC(9999, 11, 31, 23, 59, 59)); // ≈ year 9999
 const MAX_NAMES = 50;
+const API = "/api";
+const UID = "u1";
 
-/** One-shot: list events in [from, to) with:
- *  - attendeeCount
- *  - attending (for current user)
- * - attendeeNames
- */
-export const listEventsWithAttendance = async (
-  from = MIN_DATE,
-  to = MAX_DATE,
-  max = 200
-) => {
-  const uid = auth.currentUser?.uid;
-  if (!uid) throw new Error("Not logged in");
-
-  const qy = query(
-    collection(db, "events"),
-    where("startsAt", ">=", Timestamp.fromDate(from)),
-    where("startsAt", "<", Timestamp.fromDate(to)),
-    orderBy("startsAt", "asc"),
-    limit(max)
-  );
-
-  const snap = await getDocs(qy);
-
-  const rows = await Promise.all(
-    snap.docs.map(async (d) => {
-      const data = d.data();
-      const attendeesRef = collection(db, "events", d.id, "attendees");
-
-      const [countSnap, myAttendSnap, namesSnap] = await Promise.all([
-        getCountFromServer(query(attendeesRef, where("status", "==", "yes"))),
-        getDoc(doc(attendeesRef, uid)),
-        getDocs(
-          query(
-            attendeesRef,
-            where("status", "==", "yes"),
-            limit(MAX_NAMES) // keep it light
-          )
-        ),
-      ]);
-
-      const attendeeNames = namesSnap.docs.map((d) => {
-        const data = d.data() || {};
-        return {
-          uid: d.id, // ← doc id = user uid
-          name: data.name ?? "Unknown",
-          team: data.team || null, // "gold" | "purple" | null
-          status: data.status || "no",
-        };
-      });
-
-      return {
-        id: d.id,
-        ...data,
-        startsAt: data.startsAt.toDate(),
-        endsAt: data.endsAt?.toDate(),
-        attendeeCount: countSnap.data().count,
-        attending: myAttendSnap.data()?.status == "yes",
-        attendeeNames, // 👈 add it to your row
-      };
-    })
-  );
-
-  return rows;
-};
-
-// Count YES-per-team → pick smaller; random on tie
-async function pickBalancedTeam(eventId) {
-  const base = collection(db, "events", eventId, "attendees");
-  const [goldSnap, purpleSnap] = await Promise.all([
-    getCountFromServer(
-      query(base, where("status", "==", "yes"), where("team", "==", "gold"))
-    ),
-    getCountFromServer(
-      query(base, where("status", "==", "yes"), where("team", "==", "purple"))
-    ),
-  ]);
-  const gold = goldSnap.data().count || 0;
-  const purple = purpleSnap.data().count || 0;
-  if (gold < purple) return "gold";
-  if (purple < gold) return "purple";
-  return Math.random() < 0.5 ? "gold" : "purple";
+/* --------------------- Helpers --------------------- */
+async function jsonFetch(url, opts = {}) {
+  const res = await fetch(url, {
+    headers: { "Content-Type": "application/json" },
+    ...opts,
+  });
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+  return res.json();
 }
 
+/* --------------------- Event listing --------------------- */
+/** Mimics listEventsWithAttendance()  */
+export const listEventsWithAttendance = async (from, to, max = 200) => {
+  const params = new URLSearchParams();
+  if (from) params.set("from", from.toISOString());
+  if (to) params.set("to", to.toISOString());
+
+  const events = await jsonFetch(`${API}/events?${params}`);
+
+  // Attach computed attendance data (count, names, etc.)
+  return events.slice(0, max).map((e) => {
+    const yes = e.attendees?.filter((a) => a.status === "yes") ?? [];
+    const uid = UID;
+    const attending = yes.some((a) => a.uid === uid);
+    const attendeeNames = yes.slice(0, MAX_NAMES);
+    return {
+      ...e,
+      startsAt: new Date(e.startsAt),
+      endsAt: e.endsAt ? new Date(e.endsAt) : null,
+      attendeeCount: yes.length,
+      attending,
+      attendeeNames,
+    };
+  });
+};
+
+/* --------------------- Attendance --------------------- */
 export async function attend(eventId) {
-  const user = auth.currentUser;
-  if (!user) throw new Error("Not logged in");
+  const user = await fetch(`/api/users?uid=${UID}`).then((r) => r.json());
+  if (!user.uid) throw new Error("Not logged in");
 
-  const attRef = doc(db, "events", eventId, "attendees", user.uid);
-  const snap = await getDoc(attRef);
-  const prev = snap.exists() ? snap.data() : null;
+  // pickBalancedTeam mock: alternate teams for realism
+  const myTeam = Math.random() < 0.5 ? "gold" : "purple";
 
-  // keep existing team; assign only if none
-  const team = prev && prev.team ? prev.team : await pickBalancedTeam(eventId);
-
-  await setDoc(
-    attRef,
-    {
-      name: user.displayName || "",
+  await jsonFetch(`${API}/attendees`, {
+    method: "POST",
+    body: JSON.stringify({
+      eventId,
+      uid: user.uid,
+      name: user.displayName,
       status: "yes",
-      team, // sticky
-      updatedAt: serverTimestamp(),
-    },
-    { merge: true } // never wipes team
-  );
+      team: myTeam,
+    }),
+  });
 }
 
 export async function unattend(eventId) {
-  const user = auth.currentUser;
-  if (!user) throw new Error("Not logged in");
+  const user = await fetch(`/api/users?uid=${UID}`).then((r) => r.json());
+  if (!user.uid) throw new Error("Not logged in");
 
-  await setDoc(
-    doc(db, "events", eventId, "attendees", user.uid),
-    { status: "no", updatedAt: serverTimestamp() },
-    { merge: true } // preserves team for next time
-  );
+  await jsonFetch(`${API}/attendees`, {
+    method: "POST",
+    body: JSON.stringify({
+      eventId,
+      uid: user.uid,
+      name: user.displayName,
+      status: "no",
+    }),
+  });
 }
-// Count attendees
+
 export const countAttendees = async (eventId) => {
-  const cnt = await getCountFromServer(
-    collection(db, "events", eventId, "attendees")
-  );
-  return cnt.data().count;
+  const list = await jsonFetch(`${API}/attendees?eventId=${eventId}`);
+  return list.length;
 };
 
-/** Create event (auto ID). Only admins will pass Firestore rules. */
+/* --------------------- Event management --------------------- */
 export const createEvent = async ({
   title,
-  startsAt = Date,
-  endsAt = Date,
+  startsAt = new Date(),
+  endsAt = new Date(),
   location = "",
   notes = "",
 }) => {
-  const stamp = Timestamp.fromDate(startsAt);
   if (!title || !startsAt) throw new Error("title and startsAt are required");
-  const ref = await addDoc(collection(db, "events"), {
-    title,
-    startsAt: stamp,
-    endsAt: Timestamp.fromDate(endsAt),
-    location,
-    notes,
-    updatedAt: serverTimestamp(),
+  const newEvent = await jsonFetch(`${API}/events`, {
+    method: "POST",
+    body: JSON.stringify({
+      title,
+      startsAt,
+      endsAt,
+      location,
+      notes,
+    }),
   });
-  return ref.id;
+  return newEvent.id;
 };
 
-/** Update/Upsert event by id (partial update). Admin-only via rules. */
 export const updateEvent = async ({ eventId, patch }) => {
-  if (!eventId) throw new Error("eventId required");
-  await setDoc(
-    doc(db, "events", eventId),
-    { ...patch, updatedAt: serverTimestamp() },
-    { merge: true }
-  );
+  await jsonFetch(`${API}/events`, {
+    method: "PATCH",
+    body: JSON.stringify({ eventId, patch }),
+  });
 };
 
-/** Delete event + all attendee docs under it. Admin-only via rules. */
 export const deleteEvent = async (eventId) => {
-  if (!eventId) throw new Error("eventId required");
-
-  // Recursively delete attendees (client-side loop, works fine for team sizes)
-  const attendeesCol = collection(db, "events", eventId, "attendees");
-  while (true) {
-    const snap = await getDocs(query(attendeesCol, 300));
-    if (snap.empty) break;
-    await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)));
-  }
-
-  // Finally delete the event document
-  await deleteDoc(doc(db, "events", eventId));
+  await jsonFetch(`${API}/events`, {
+    method: "DELETE",
+    body: JSON.stringify({ eventId }),
+  });
 };
+
+/* --------------------- Teams --------------------- */
 export const switchTeam = async (eventId, uid) => {
-  const attRef = doc(db, "events", eventId, "attendees", uid);
-  const snap = await getDoc(attRef);
-  let team = "";
-
-  if (!snap.exists() || snap.data()?.team == null) {
-    return null; // no RSVP yet
-  }
-
-  const data = snap.data();
-  team = data.team;
-  const newTeam = team == "gold" ? "purple" : "gold";
-
-  await setDoc(attRef, { team: newTeam }, { merge: true });
+  const attendees = await jsonFetch(`${API}/attendees?eventId=${eventId}`);
+  const me = attendees.find((a) => a.uid === uid);
+  if (!me) return null;
+  const newTeam = me.team === "gold" ? "purple" : "gold";
+  await jsonFetch(`${API}/attendees`, {
+    method: "POST",
+    body: JSON.stringify({
+      eventId,
+      uid,
+      name: me.name,
+      status: "yes",
+      team: newTeam,
+    }),
+  });
 };
 
-export async function updateUser() {
-  const user = auth.currentUser;
-  if (!user) throw new Error("No user logged in");
+/* --------------------- Users --------------------- */
+export async function updateUser(newData) {
+  const user = await fetch(`/api/users?uid=${UID}`).then((r) => r.json());
+  if (!user.uid) throw new Error("No user logged in");
 
-  const userDoc = doc(db, "users", user.uid);
-
-  await setDoc(
-    userDoc,
-    {
+  const updated = await jsonFetch(`${API}/users`, {
+    method: "PATCH",
+    body: JSON.stringify({
       uid: user.uid,
-      displayName: user.displayName ?? null,
-      email: user.email ?? null,
-      lastLogin: serverTimestamp(),
-    },
-    { merge: true }
-  );
+      displayName: newData?.displayName ?? user.displayName,
+    }),
+  });
+
+  return updated;
 }

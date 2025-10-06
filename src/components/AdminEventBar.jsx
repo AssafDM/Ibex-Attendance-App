@@ -3,7 +3,6 @@ import AddEventForm from "./AddEventForm";
 import { deleteEvent, switchTeam } from "../api.fb";
 import AttList from "./AttList";
 import { Bell, SquarePenIcon, Trash2 } from "lucide-react";
-import { getFunctions, httpsCallable } from "firebase/functions";
 
 function useAutoHeight(open, deps = []) {
   const innerRef = useRef(null);
@@ -50,8 +49,7 @@ export default function AdminEventBar({
   const open = openEvent === event.id;
   const [windowMode, setWindowMode] = useState("players"); //should contain only "players"/"push"/"edit"/"delete"
   const [title, SetTitle] = useState("");
-  const functions = getFunctions();
-  const sendNotification = httpsCallable(functions, "sendNotification");
+  const sendNotification = null;
 
   // Re-sync deleteBox when row opens/closes
   useEffect(() => {

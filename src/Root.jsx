@@ -16,9 +16,12 @@ export default function Root() {
 
   //demand user sign in
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => setUser(u || null));
-
-    return unsub; // cleanup
+    async function getUser() {
+      const res = await fetch(`/api/users?uid=u1`);
+      const u = await res.json();
+      setUser(u); // ✅ move setUser inside the async function
+    }
+    getUser();
   }, []);
 
   useEffect(() => {

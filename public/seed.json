@@ -1,8 +1,57 @@
 {
   "events": [
     {
+      "id": "ev1",
+      "title": "Rugby Training",
+      "startsAt": "2025-10-05T18:00:00Z",
+      "location": "Park Hayarkon",
+      "notes": "Bring water",
+      "attendees": [
+        {
+          "uid": "u1",
+          "name": "User",
+          "status": "yes"
+        },
+        {
+          "uid": "u2",
+          "name": "Cassandra",
+          "status": "yes"
+        },
+        {
+          "uid": "u3",
+          "name": "Antoine",
+          "status": "yes"
+        },
+        {
+          "uid": "u4",
+          "name": "Clements",
+          "status": "yes"
+        },
+        {
+          "uid": "u5",
+          "name": "Faf De Klerk",
+          "status": "yes"
+        },
+        {
+          "uid": "u7",
+          "name": "Adnrew",
+          "status": "yes"
+        },
+        {
+          "uid": "u8",
+          "name": "Jack",
+          "status": "yes"
+        },
+        {
+          "uid": "u9",
+          "name": "Jeremy",
+          "status": "yes"
+        }
+      ]
+    },
+    {
       "id": "ev2",
-      "title": "Friendly Match vs Lions",
+      "title": "Friendly Match vs Lion",
       "startsAt": "2025-10-07T19:30:00.000Z",
       "location": "Wingate",
       "notes": "",
@@ -11,13 +60,13 @@
           "uid": "u1",
           "name": "User",
           "status": "yes",
-          "team": "gold"
+          "team": "purple"
         },
         {
           "uid": "u2",
           "name": "Cassandra",
           "status": "yes",
-          "team": "purple"
+          "team": "gold"
         },
         {
           "uid": "u4",
@@ -38,15 +87,6 @@
         }
       ],
       "endsAt": "2025-10-07T21:30:00.000Z"
-    },
-    {
-      "id": "ev1759777825549",
-      "title": "Evening Practice",
-      "startsAt": "2025-10-08T17:15:00.000Z",
-      "endsAt": "2025-10-08T19:15:00.000Z",
-      "location": "Sportek",
-      "notes": "",
-      "attendees": []
     }
   ],
   "users": [
