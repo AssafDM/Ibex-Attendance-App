@@ -8,7 +8,7 @@ import { useAdmin } from "../hooks/useAdmin";
 import { useNavigate } from "react-router-dom";
 import { Settings, ShieldUser } from "lucide-react";
 import OverlayCard from "./OverlayCard";
-import SettingsMenu from "./settings";
+import SettingsMenu from "./Settings";
 import PullToRefresh from "pulltorefreshjs";
 
 /*temporary*/

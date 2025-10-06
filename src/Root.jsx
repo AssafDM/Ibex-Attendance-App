@@ -4,7 +4,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
 import App from "./App";
 import AuthPage from "./AuthPage";
-import AdminDash from "./components/adminDash";
+import AdminDash from "./components/AdminDash";
 import AdminGate from "./components/AdminGate";
 import Dashboard from "./components/Dashboard";
 import { updateUser } from "./api.fb";
