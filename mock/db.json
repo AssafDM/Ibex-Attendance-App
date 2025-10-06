@@ -1,0 +1,45 @@
+{
+  "events": [
+    {
+      "id": "ev1",
+      "title": "Rugby Training",
+      "startsAt": "2025-10-05T18:00:00Z",
+      "location": "Park Hayarkon",
+      "notes": "Bring water",
+      "attendees": [
+        { "uid": "u1", "name": "User", "status": "yes" },
+        { "uid": "u2", "name": "Cassandra", "status": "yes" },
+        { "uid": "u3", "name": "Antoine", "status": "yes" },
+        { "uid": "u4", "name": "Clements", "status": "yes" },
+        { "uid": "u5", "name": "Faf De Klerk", "status": "yes" },
+        { "uid": "u7", "name": "Adnrew", "status": "yes" },
+        { "uid": "u8", "name": "Jack", "status": "yes" },
+        { "uid": "u9", "name": "Jeremy", "status": "yes" }
+      ]
+    },
+    {
+      "id": "ev2",
+      "title": "Friendly Match vs Lions",
+      "startsAt": "2025-10-07T19:30:00Z",
+      "location": "Wingate",
+      "notes": "",
+      "attendees": [
+        { "uid": "u1", "name": "User", "status": "yes" },
+        { "uid": "u2", "name": "Cassandra", "status": "yes" },
+        { "uid": "u4", "name": "Clements", "status": "yes" },
+        { "uid": "u8", "name": "Jack", "status": "yes" },
+        { "uid": "u9", "name": "Jeremy", "status": "yes" }
+      ]
+    }
+  ],
+  "users": [
+    { "uid": "u1", "name": "User", "role": "admin" },
+    { "uid": "u2", "name": "Cassandra", "role": "player" },
+    { "uid": "u3", "name": "Antoine", "role": "player" },
+    { "uid": "u4", "name": "Clements", "role": "player" },
+    { "uid": "u5", "name": "Faf De Klerk", "role": "player" },
+    { "uid": "u7", "name": "Adnrew", "role": "player" },
+    { "uid": "u8", "name": "Jack", "role": "player" },
+    { "uid": "u9", "name": "Jeremy", "role": "player" }
+  ]
+}

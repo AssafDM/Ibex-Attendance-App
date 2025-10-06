@@ -1,0 +1,40 @@
+import fs from "fs";
+import path from "path";
+
+const dbPath = path.join(process.cwd(), "mock/db.json");
+
+const loadDB = () => JSON.parse(fs.readFileSync(dbPath, "utf8"));
+const saveDB = (data) =>
+  fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
+
+export default function handler(req, res) {
+  const db = loadDB();
+
+  // ✅ GET /api/users
+  if (req.method === "GET") {
+    const { uid } = req.query;
+    if (uid) {
+      const user = db.users.find((u) => u.uid === uid);
+      if (!user) return res.status(404).json({ error: "User not found" });
+      return res.status(200).json(user);
+    }
+    return res.status(200).json(db.users);
+  }
+
+  // ✏️ PATCH /api/users (update username)
+  if (req.method === "PATCH") {
+    const { uid, name } = req.body;
+    if (!uid || !name)
+      return res.status(400).json({ error: "uid and name are required" });
+
+    const user = db.users.find((u) => u.uid === uid);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    user.name = name;
+    saveDB(db);
+
+    return res.status(200).json(user);
+  }
+
+  return res.status(405).json({ error: "Method not allowed" });
+}
