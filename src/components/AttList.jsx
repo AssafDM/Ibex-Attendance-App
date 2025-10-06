@@ -4,7 +4,7 @@ import React from "react";
  * @param {*} namesList - list of display name
  * @returns
  */
-export default function AttList({ namesList, onEventClick }) {
+export default function AttList({ namesList, onNameClick }) {
   let count = 0;
   const on = namesList.length > 0;
   return (
@@ -19,7 +19,8 @@ export default function AttList({ namesList, onEventClick }) {
               key={count++}
               onClick={async (e) => {
                 e.stopPropagation();
-                await onEventClick?.(p.uid);
+
+                await onNameClick?.(p.uid);
               }}
             >
               {p.name}

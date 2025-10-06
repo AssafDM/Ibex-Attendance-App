@@ -136,7 +136,7 @@ export default function AdminEventBar({
                   <div className="rounded-4xl bg-gray-100 pb-2">
                     <AttList
                       namesList={event.attendeeNames}
-                      onEventClick={
+                      onNameClick={
                         editable
                           ? (uid) => {
                               switchTeam(event.id, uid);

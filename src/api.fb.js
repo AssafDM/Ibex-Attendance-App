@@ -204,3 +204,21 @@ export const switchTeam = async (eventId, uid) => {
 
   await setDoc(attRef, { team: newTeam }, { merge: true });
 };
+
+export async function updateUser() {
+  const user = auth.currentUser;
+  if (!user) throw new Error("No user logged in");
+
+  const userDoc = doc(db, "users", user.uid);
+
+  await setDoc(
+    userDoc,
+    {
+      uid: user.uid,
+      displayName: user.displayName ?? null,
+      email: user.email ?? null,
+      lastLogin: serverTimestamp(),
+    },
+    { merge: true }
+  );
+}
