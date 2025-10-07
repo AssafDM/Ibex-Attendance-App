@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Bell, LucideLogOut, SquarePen } from "lucide-react";
+import { Bell, CalendarPlus, LucideLogOut, SquarePen } from "lucide-react";
 import { signOut, updateProfile } from "firebase/auth";
 import { auth, db } from "../firebase";
 import { getMessaging, getToken, isSupported } from "firebase/messaging";
@@ -16,6 +16,7 @@ function toTitleCase(str) {
 export default function SettingsMenu({ user }) {
   const [editName, setEditName] = useState(false);
   const [name, setName] = useState(user.displayName);
+  const [pasteLink, setPasteLink] = useState(false);
   const handleLogout = async () => {
     await signOut(auth);
     window.location.href = "/"; // redirect after logout
@@ -64,6 +65,25 @@ export default function SettingsMenu({ user }) {
         <div className=" text-left text-lg">Allow Notifications</div>
         <Bell onClick={enablePush} />
       </div>
+      <div className="flex justify-between">
+        {!pasteLink && (
+          <div className=" text-left text-lg">Copy Calendar Link</div>
+        )}
+        {pasteLink && (
+          <div className=" text-center text-lg text-green-500">
+            Link copied to clipboard!
+          </div>
+        )}
+        <CalendarPlus
+          onClick={() => {
+            navigator.clipboard.writeText(
+              "https://calendar.google.com/calendar/u/0?cid=dGx2aWJleHJmY0BnbWFpbC5jb20"
+            );
+            setPasteLink(true);
+          }}
+        />
+      </div>
+
       <div>
         <div className="flex justify-between">
           <div className=" text-left text-lg">change name</div>
@@ -88,7 +108,7 @@ export default function SettingsMenu({ user }) {
             <button
               type="button"
               onClick={async () => {
-                await updateProfile(user, {
+                await updateUser({
                   displayName: toTitleCase(name),
                 });
                 setEditName(false);
