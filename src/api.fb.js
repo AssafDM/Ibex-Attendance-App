@@ -51,7 +51,7 @@ export const listEventsWithAttendance = async (
       const attendeesRef = collection(db, "events", d.id, "attendees");
 
       const [countSnap, myAttendSnap, namesSnap] = await Promise.all([
-        getCountFromServer(attendeesRef),
+        getCountFromServer(query(attendeesRef, where("status", "==", "yes"))),
         getDoc(doc(attendeesRef, uid)),
         getDocs(
           query(
