@@ -76,6 +76,7 @@ export const listEventsWithAttendance = async (
         id: d.id,
         ...data,
         startsAt: data.startsAt.toDate(),
+        endsAt: data.endsAt.toDate(),
         attendeeCount: countSnap.data().count,
         attending: myAttendSnap.data()?.status == "yes",
         attendeeNames, // 👈 add it to your row
@@ -142,14 +143,17 @@ export async function unattend(eventId) {
 export const createEvent = async ({
   title,
   startsAt = Date,
+  endsAt = Date,
   location = "",
   notes = "",
 }) => {
-  const stamp = Timestamp.fromDate(startsAt);
+  const start = Timestamp.fromDate(startsAt);
+  const end = Timestamp.fromDate(endsAt);
   if (!title || !startsAt) throw new Error("title and startsAt are required");
   const ref = await addDoc(collection(db, "events"), {
     title,
-    startsAt: stamp,
+    startsAt: start,
+    endsAt: end,
     location,
     notes,
     updatedAt: serverTimestamp(),

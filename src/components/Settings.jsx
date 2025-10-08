@@ -137,6 +137,7 @@ export default function SettingsMenu({ user }) {
           </div>
         )}
       </div>
+      <p className="text-center">version - {__APP_VERSION__}</p>
     </div>
   );
 }

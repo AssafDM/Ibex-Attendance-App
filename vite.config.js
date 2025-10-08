@@ -5,7 +5,7 @@ import { VitePWA } from "vite-plugin-pwa";
 
 // https://vite.dev/config/
 export default defineConfig({
-  define: { __APP_VERSION__: JSON.stringify("v1.0.0") },
+  define: { __APP_VERSION__: JSON.stringify("v.10.8.2") },
   plugins: [
     react(),
     tailwindcss(),

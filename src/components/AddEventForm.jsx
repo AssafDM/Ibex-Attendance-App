@@ -5,33 +5,22 @@ import { createEvent, updateEvent } from "../api.fb";
  *
  * @returns jsx element
  */
-
+function toDateTime(date) {
+  const d = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 16);
+  return d;
+}
 export default function AddEventForm({ onSuccess, onCancel, event = null }) {
   const titleRef = useRef(null);
   const onSubmit = !!event ? updateEvent : createEvent;
   let d = new Date();
   d.setHours(20, 15, 0, 0);
   if (event) d = event.startsAt;
-  d = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 16);
+  d = toDateTime(d);
   const [title, setTitle] = useState(event ? event.title : "Evening Practice");
   const [when, setWhen] = useState(d); // value from <input type="datetime-local">
-  const [endsAt, setEndsAt] = useState(
-    event?.endsAt
-      ? new Date(
-          event.endsAt.getTime() - event.endsAt.getTimezoneOffset() * 60000
-        )
-          .toISOString()
-          .slice(0, 16)
-      : new Date(
-          new Date(when).getTime() -
-            new Date(when).getTimezoneOffset() * 60000 +
-            2 * 60 * 60 * 1000
-        )
-          .toISOString()
-          .slice(0, 16)
-  );
+  const [endsAt, setEndsAt] = useState(event ? toDateTime(event.endsAt) : "");
 
   const [location, setLocation] = useState(event ? event.location : "Sportek");
   const [notes, setNotes] = useState(event ? event.notes : "");
@@ -80,15 +69,17 @@ export default function AddEventForm({ onSuccess, onCancel, event = null }) {
     }
   };
   useEffect(() => {
-    setEndsAt(
-      new Date(
-        new Date(when).getTime() -
-          new Date(when).getTimezoneOffset() * 60000 +
-          2 * 60 * 60 * 1000
-      )
-        .toISOString()
-        .slice(0, 16)
-    );
+    if (endsAt == "" || new Date(endsAt) < new Date(when)) {
+      setEndsAt(
+        new Date(
+          new Date(when).getTime() -
+            new Date(when).getTimezoneOffset() * 60000 +
+            2 * 60 * 60 * 1000
+        )
+          .toISOString()
+          .slice(0, 16)
+      );
+    }
   }, [when]);
 
   return (
