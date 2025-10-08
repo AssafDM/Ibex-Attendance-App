@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Bell, CalendarPlus, LucideLogOut, SquarePen } from "lucide-react";
 import { signOut, updateCurrentUser, updateProfile } from "firebase/auth";
 import { auth, db } from "../firebase";
@@ -17,6 +17,7 @@ export default function SettingsMenu({ user }) {
   const [editName, setEditName] = useState(false);
   const [name, setName] = useState(user.displayName);
   const [pasteLink, setPasteLink] = useState(false);
+  const [errorName, setErrorName] = useState("");
   const handleLogout = async () => {
     await signOut(auth);
     window.location.href = "/"; // redirect after logout
@@ -54,6 +55,15 @@ export default function SettingsMenu({ user }) {
 
     return token;
   }
+
+  useEffect(() => {
+    if (name == "") {
+      setErrorName("Error! Name must not be empty.");
+    } else {
+      setErrorName("");
+    }
+  }, [name]);
+
   return (
     <div className="flex flex-col gap-5 p-5 ">
       <div className="flex justify-between">
@@ -108,16 +118,22 @@ export default function SettingsMenu({ user }) {
             <button
               type="button"
               onClick={async () => {
-                await updateProfile(user, {
-                  displayName: toTitleCase(name),
-                });
+                if (name == "") {
+                } else {
+                  await updateProfile(user, {
+                    displayName: toTitleCase(name),
+                  });
 
-                setEditName(false);
+                  setEditName(false);
+                }
               }}
-              className="w-full rounded-lg border-white text-white px-4 py-2 bg-ibex-gold"
+              className={`w-full rounded-lg border-white text-white px-4 py-2 ${
+                name == "" ? `bg-gray-400` : ` bg-ibex-gold`
+              }`}
             >
               Apply
             </button>
+            {errorName && <p className="text-red-500">{errorName}</p>}
           </div>
         )}
       </div>

@@ -11,8 +11,10 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       srcDir: "src",
-      filename: "SW.js",
-      registerType: "autoUpdate", // ✅ auto register + update
+      filename: "SW.js", // this file is YOUR service worker
+      registerType: "autoUpdate",
+      workbox: { importScripts: ["firebase-messaging-sw.js"] },
+
       devOptions: { enabled: true },
       manifest: {
         theme_color: "#F9FAFB",

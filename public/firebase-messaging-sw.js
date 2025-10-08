@@ -1,4 +1,12 @@
 /* public/firebase-messaging-sw.js */
+self.addEventListener("install", (event) => {
+  self.skipWaiting(); // activates immediately
+});
+self.addEventListener("activate", (event) => {
+  clients.claim(); // take control of open tabs
+});
+
+const version = 810253;
 importScripts(
   "https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"
 );
@@ -16,10 +24,11 @@ const firebaseConfig = {
 };
 const app = firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging(app);
-messaging.onBackgroundMessage(({ data }) => {
-  if (!data) return;
-  self.registration.showNotification(data.title || "Notification", {
-    body: data.body,
-    icon: data.icon,
-  });
+messaging.onBackgroundMessage((payload) => {
+  console.log(
+    "[firebase-messaging-sw.js] Received background message",
+    payload
+  );
+  const { title, body, icon } = payload.data || {};
+  self.registration.showNotification(title || "Notification", { body, icon });
 });

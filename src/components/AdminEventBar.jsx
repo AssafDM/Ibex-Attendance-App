@@ -187,7 +187,6 @@ export default function AdminEventBar({
                           event: event,
                         });
                         setOpenEvent(null);
-                        setBell(false);
                       }}
                       className="w-full rounded-lg border-white text-white px-4 py-2 bg-ibex-gold"
                     >

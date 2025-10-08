@@ -5,6 +5,7 @@ import { createEvent, updateEvent } from "../api.fb";
  *
  * @returns jsx element
  */
+
 export default function AddEventForm({ onSuccess, onCancel, event = null }) {
   const titleRef = useRef(null);
   const onSubmit = !!event ? updateEvent : createEvent;
@@ -16,6 +17,21 @@ export default function AddEventForm({ onSuccess, onCancel, event = null }) {
     .slice(0, 16);
   const [title, setTitle] = useState(event ? event.title : "Evening Practice");
   const [when, setWhen] = useState(d); // value from <input type="datetime-local">
+  const [endsAt, setEndsAt] = useState(
+    event?.endsAt
+      ? new Date(
+          event.endsAt.getTime() - event.endsAt.getTimezoneOffset() * 60000
+        )
+          .toISOString()
+          .slice(0, 16)
+      : new Date(
+          new Date(when).getTime() -
+            new Date(when).getTimezoneOffset() * 60000 +
+            2 * 60 * 60 * 1000
+        )
+          .toISOString()
+          .slice(0, 16)
+  );
 
   const [location, setLocation] = useState(event ? event.location : "Sportek");
   const [notes, setNotes] = useState(event ? event.notes : "");
@@ -34,9 +50,13 @@ export default function AddEventForm({ onSuccess, onCancel, event = null }) {
 
     if (!title.trim()) return setErr("Title is required");
     if (!when) return setErr("Date & time are required");
+    if (!endsAt) return setErr("End time is required");
+    if (new Date(endsAt) <= new Date(when))
+      return setErr("End time must be after start time");
     const patch = {
       title: title.trim(),
       startsAt: new Date(when),
+      endsAt: new Date(endsAt),
       location: location.trim(),
       notes: notes.trim(),
     };
@@ -59,6 +79,17 @@ export default function AddEventForm({ onSuccess, onCancel, event = null }) {
       setErr(e2?.message || "Failed to create event");
     }
   };
+  useEffect(() => {
+    setEndsAt(
+      new Date(
+        new Date(when).getTime() -
+          new Date(when).getTimezoneOffset() * 60000 +
+          2 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16)
+    );
+  }, [when]);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
@@ -86,7 +117,7 @@ export default function AddEventForm({ onSuccess, onCancel, event = null }) {
 
       <div className="w-full ">
         <label htmlFor="Time" className="block text-sm font-medium mb-1">
-          Date & Time
+          Start time
         </label>
         <input
           id="Time"
@@ -94,6 +125,20 @@ export default function AddEventForm({ onSuccess, onCancel, event = null }) {
           step="900"
           value={when}
           onChange={(e) => setWhen(e.target.value)}
+          className="w-full  rounded-lg border px-3 py-2 appearance-none [-webkit-appearance:none] "
+          required
+        />
+      </div>
+      <div className="w-full ">
+        <label htmlFor="Time" className="block text-sm font-medium mb-1">
+          End time
+        </label>
+        <input
+          id="Time"
+          type="datetime-local"
+          step="900"
+          value={endsAt}
+          onChange={(e) => setEndsAt(e.target.value)}
           className="w-full  rounded-lg border px-3 py-2 appearance-none [-webkit-appearance:none] "
           required
         />
