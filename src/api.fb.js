@@ -137,13 +137,6 @@ export async function unattend(eventId) {
     { merge: true } // preserves team for next time
   );
 }
-// Count attendees
-export const countAttendees = async (eventId) => {
-  const cnt = await getCountFromServer(
-    collection(db, "events", eventId, "attendees")
-  );
-  return cnt.data().count;
-};
 
 /** Create event (auto ID). Only admins will pass Firestore rules. */
 export const createEvent = async ({

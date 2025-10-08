@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Bell, CalendarPlus, LucideLogOut, SquarePen } from "lucide-react";
-import { signOut, updateProfile } from "firebase/auth";
+import { signOut, updateCurrentUser, updateProfile } from "firebase/auth";
 import { auth, db } from "../firebase";
 import { getMessaging, getToken, isSupported } from "firebase/messaging";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
@@ -108,9 +108,10 @@ export default function SettingsMenu({ user }) {
             <button
               type="button"
               onClick={async () => {
-                await updateUser({
+                await updateProfile(user, {
                   displayName: toTitleCase(name),
                 });
+
                 setEditName(false);
               }}
               className="w-full rounded-lg border-white text-white px-4 py-2 bg-ibex-gold"
