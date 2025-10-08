@@ -2,23 +2,25 @@ import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
-import fs from "fs";
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: { __APP_VERSION__: JSON.stringify("v1.0.0") },
   plugins: [
     react(),
     tailwindcss(),
     VitePWA({
-      srcDir: "src",
-      filename: "SW.js", // this file is YOUR service worker
       registerType: "autoUpdate",
-      workbox: { importScripts: ["firebase-messaging-sw.js"] },
+      workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
+        importScripts: ["firebase-messaging-sw.js"],
+      },
 
       devOptions: { enabled: true },
       manifest: {
         theme_color: "#F9FAFB",
-        background_color: "#F9FAFB",
+        background_color: "#fbc125",
 
         icons: [
           {
@@ -40,7 +42,7 @@ export default defineConfig({
     }),
   ],
   server: {
-    host: true, // lets you hit it from LAN if needed
+    host: true, // lets you hit it from LAN if needednpm
     port: 5173,
     proxy: {
       "/api": {
