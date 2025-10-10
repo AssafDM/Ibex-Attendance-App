@@ -28,7 +28,7 @@ export default function AdminEventList({
   }, [canExpand]);
 
   return (
-    <div className=" drop-shadow-lg">
+    <div className="overflow-visible drop-shadow-lg">
       <div className="flex items-center justify-between mb-3 mt-1">
         <div>
           <h2 className="text-left mt-6 font-semibold">{title}</h2>
@@ -45,17 +45,19 @@ export default function AdminEventList({
           </button>
         )}
       </div>
-      {showlist.map((e) => (
-        <AdminEventBar
-          key={e.id}
-          event={e}
-          editable={edit}
-          openEvent={editEvent}
-          setOpenEvent={setEditEvent}
-          onClick={() => setEditEvent(e.id)}
-          onEventChange={onGlobalRefresh}
-        />
-      ))}
+      <div className="flex flex-col space-y-2">
+        {showlist.map((e) => (
+          <AdminEventBar
+            key={e.id}
+            event={e}
+            editable={edit}
+            openEvent={editEvent}
+            setOpenEvent={setEditEvent}
+            onClick={() => setEditEvent(e.id)}
+            onEventChange={onGlobalRefresh}
+          />
+        ))}
+      </div>
     </div>
   );
 }

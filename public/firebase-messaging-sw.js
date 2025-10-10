@@ -6,7 +6,7 @@ self.addEventListener("activate", (event) => {
   clients.claim(); // take control of open tabs
 });
 
-const version = 810253;
+const version = 810254;
 importScripts(
   "https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"
 );
@@ -25,6 +25,7 @@ const firebaseConfig = {
 const app = firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging(app);
 messaging.onBackgroundMessage((payload) => {
+  if (payload.data?.type === "healthcheck") return;
   console.log(
     "[firebase-messaging-sw.js] Received background message",
     payload
